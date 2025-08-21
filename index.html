@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naukrri.com - Login with Netlify Identity</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Netlify Identity Widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            flex: 1;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            color: #2a5bd7;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            color: #ff8c00;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #2a5bd7;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0;
+            gap: 30px;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 400px;
+            flex-shrink: 0;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .form-header h2 {
+            color: #2a5bd7;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .form-header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #777;
+        }
+        
+        .input-with-icon input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-with-icon input:focus {
+            border-color: #2a5bd7;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(42, 91, 215, 0.2);
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        
+        .forgot-password a {
+            color: #2a5bd7;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #2a5bd7, #3a6be8);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(42, 91, 215, 0.2);
+        }
+        
+        .submit-btn:hover {
+            background: linear-gradient(to right, #1a4bbd, #2a5bd7);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(42, 91, 215, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .netlify-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #00ad9f, #00c7b7);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 173, 159, 0.2);
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .netlify-btn:hover {
+            background: linear-gradient(to right, #009688, #00ad9f);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 173, 159, 0.3);
+        }
+        
+        .separator {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+        
+        .separator::before {
+            content: '';
+            display: block;
+            height: 1px;
+            background-color: #ddd;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+        }
+        
+        .separator span {
+            background-color: white;
+            padding: 0 15px;
+            position: relative;
+            color: #777;
+        }
+        
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .social-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .social-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .github {
+            background-color: #333;
+        }
+        
+        .google {
+            background-color: #db4a39;
+        }
+        
+        .linkedin {
+            background-color: #0077b5;
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .signup-link p {
+            color: #555;
+            font-size: 15px;
+        }
+        
+        .signup-link a {
+            color: #2a5bd7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .hero-content {
+            flex: 1;
+            padding: 20px 0;
+        }
+        
+        .hero-content h2 {
+            font-size: 36px;
+            color: #2a5bd7;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        
+        .hero-content p {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+        
+        .features {
+            list-style: none;
+            margin-top: 30px;
+        }
+        
+        .features li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 17px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .features i {
+            color: #2a5bd7;
+            margin-right: 15px;
+            font-size: 20px;
+            background: rgba(42, 91, 215, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Configuration Guide */
+        .config-guide {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 40px auto;
+            max-width: 800px;
+        }
+        
+        .config-guide h2 {
+            color: #2a5bd7;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-left: 4px solid #2a5bd7;
+            background: #f9f9f9;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .step h3 {
+            color: #2a5bd7;
+            margin-bottom: 10px;
+        }
+        
+        .step p {
+            margin-bottom: 10px;
+        }
+        
+        .code {
+            background: #2a5bd7;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background-color: #2a5bd7;
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-right: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+        
+        .copyright {
+            font-size: 14px;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            background-color: #4CAF50;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background-color: #f44336;
+        }
+        
+        /* Dashboard Styles (hidden by default) */
+        .dashboard {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin: 40px auto;
+            max-width: 600px;
+        }
+        
+        .dashboard h2 {
+            color: #2a5bd7;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard p {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .user-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .form-container {
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .hero-content {
+                text-align: center;
+                margin-top: 30px;
+                padding: 0 20px;
+            }
+            
+            .features {
+                text-align: left;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 20px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 5px 10px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .footer-links {
+                margin-bottom: 15px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .footer-links li {
+                margin: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Naukrri<span>.com</span></h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#">Jobs</a></li>
+                    <li><a href="#">Companies</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Resources</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login Form Section -->
+    <div class="container">
+        <div class="main-content">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Login</h2>
+                    <p>Access your account to find the perfect job</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" placeholder="Enter your password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#" id="forgotPassword">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+                    
+                    <button type="button" class="netlify-btn" id="netlifyLogin">
+                        <i class="fas fa-sign-in-alt"></i> Login with Netlify Identity
+                    </button>
+                </form>
+                
+                <div class="separator">
+                    <span>Or continue with</span>
+                </div>
+                
+                <div class="social-login">
+                    <div class="social-btn github" id="githubLogin">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <div class="social-btn google" id="googleLogin">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="social-btn linkedin" id="linkedinLogin">
+                        <i class="fab fa-linkedin-in"></i>
+                    </div>
+                </div>
+                
+                <div class="signup-link">
+                    <p>New to Naukrri? <a href="#" id="showSignup">Create an account</a></p>
+                </div>
+            </div>
+            
+            <div class="hero-content">
+                <h2>Find Your Dream Job Today</h2>
+                <p>Login to access personalized job recommendations, save job searches, and get noticed by top employers.</p>
+                
+                <ul class="features">
+                    <li><i class="fas fa-check-circle"></i> Access to 50,000+ job listings from top companies</li>
+                    <li><i class="fas fa-check-circle"></i> Get matched with jobs that fit your skills and experience</li>
+                    <li><i class="fas fa-check-circle"></i> Personalized job recommendations based on your profile</li>
+                    <li><i class="fas fa-check-circle"></i> Apply to jobs with just one click</li>
+                    <li><i class="fas fa-check-circle"></i> Get noticed by recruiters from leading firms</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Guide -->
+    <div class="container">
+        <div class="config-guide">
+            <h2>How to Configure Netlify Identity with GitHub</h2>
+            
+            <div class="step">
+                <h3>Step 1: Deploy to Netlify</h3>
+                <p>Push your site to a GitHub repository, then connect it to Netlify:</p>
+                <div class="code">
+                    // In your Netlify dashboard:<br>
+                    // 1. Click "Add new site" > "Import an existing project"<br>
+                    // 2. Connect to your GitHub repository<br>
+                    // 3. Configure build settings (if needed) and deploy
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 2: Enable Identity Service</h3>
+                <p>In your Netlify site dashboard:</p>
+                <div class="code">
+                    // 1. Go to "Identity" > "Settings"<br>
+                    // 2. Click "Enable Identity"<br>
+                    // 3. Configure registration preferences<br>
+                    // 4. Add external providers (GitHub, Google, etc.) if desired
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 3: Add Site URL to Identity Settings</h3>
+                <p>Add your site URL to the Identity configuration:</p>
+                <div class="code">
+                    // In Identity settings:<br>
+                    // 1. Go to "Registration" > "External providers"<br>
+                    // 2. Add your site URL to allowed domains<br>
+                    // 3. Save changes
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 4: Add Netlify Identity Widget</h3>
+                <p>Include the Netlify Identity script in your HTML:</p>
+                <div class="code">
+                    &lt;script src="https://identity.netlify.com/v1/netlify-identity-widget.js"&gt;&lt;/script&gt;
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 5: Initialize Netlify Identity</h3>
+                <p>Add this JavaScript code to handle authentication:</p>
+                <div class="code">
+                    // Initialize Netlify Identity<br>
+                    if (window.netlifyIdentity) {<br>
+                    &nbsp;&nbsp;window.netlifyIdentity.on("init", user => {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;if (!user) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window.netlifyIdentity.on("login", () => {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.location.href = "/admin/";<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;});<br>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section (hidden initially) -->
+    <div class="container">
+        <div class="dashboard" id="dashboard">
+            <h2>Welcome to Your Dashboard!</h2>
+            <p>You have successfully logged in to your Naukrri account.</p>
+            
+            <div class="user-info">
+                <h3>User Information</h3>
+                <p><strong>Email:</strong> <span id="userEmail">user@example.com</span></p>
+                <p><strong>Login Method:</strong> <span id="loginMethod">Netlify Identity</span></p>
+            </div>
+            
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Help Center</a></li>
+                </ul>
+                <div class="copyright">
+                    <p>&copy; 2023 Naukrri.com. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Netlify Identity initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            if (window.netlifyIdentity) {
+                netlifyIdentity.on('init', user => {
+                    if (user) {
+                        showDashboard(user);
+                    } else {
+                        hideDashboard();
+                    }
+                });
+
+                // Handle login events
+                netlifyIdentity.on('login', user => {
+                    showNotification('Login successful! Welcome ' + user.email);
+                    showDashboard(user);
+                });
+
+                // Handle logout events
+                netlifyIdentity.on('logout', () => {
+                    showNotification('You have been logged out');
+                    hideDashboard();
+                });
+            }
+        });
+
+        // DOM elements
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const netlifyLogin = document.getElementById('netlifyLogin');
+        const githubLogin = document.getElementById('githubLogin');
+        const googleLogin = document.getElementById('googleLogin');
+        const linkedinLogin = document.getElementById('linkedinLogin');
+        const forgotPassword = document.getElementById('forgotPassword');
+        const showSignup = document.getElementById('showSignup');
+        const dashboard = document.getElementById('dashboard');
+        const userEmail = document.getElementById('userEmail');
+        const loginMethod = document.getElementById('loginMethod');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const notification = document.getElementById('notification');
+        
+        // Netlify Identity login
+        netlifyLogin.addEventListener('click', () => {
+            if (window.netlifyIdentity) {
+                netlifyIdentity.open();
+            } else {
+                showNotification('Netlify Identity is not loaded. Please check your configuration.', true);
+            }
+        });
+        
+        // GitHub login (would require additional configuration in Netlify)
+        githubLogin.addEventListener('click', () => {
+            showNotification('GitHub login would be configured in Netlify Identity settings', true);
+        });
+        
+        // Google login (would require additional configuration in Netlify)
+        googleLogin.addEventListener('click', () => {
+            showNotification('Google login would be configured in Netlify Identity settings', true);
+        });
+        
+        // LinkedIn login (would require additional configuration in Netlify)
+        linkedinLogin.addEventListener('click', () => {
+            showNotification('LinkedIn login would be configured in Netlify Identity settings', true);
+        });
+        
+        // Forgot password
+        forgotPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.netlifyIdentity) {
+                netlifyIdentity.open('recovery');
+            } else {
+                showNotification('Password recovery is available through Netlify Identity', true);
+            }
+        });
+        
+        // Show signup form
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.netlifyIdentity) {
+                netlifyIdentity.open('signup');
+            } else {
+                showNotification('Sign up is available through Netlify Identity', true);
+            }
+        });
+        
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (window.netlifyIdentity) {
+                netlifyIdentity.logout();
+            } else {
+                showNotification('Logout functionality requires Netlify Identity', true);
+            }
+        });
+        
+        // Regular form login (simulated for demo)
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showNotification('Please enter both email and password', true);
+                return;
+            }
+            
+            // Simulate login process
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            
+            setTimeout(() => {
+                showNotification('For real authentication, please use Netlify Identity login');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }, 1500);
+        });
+        
+        // Helper functions
+        function showDashboard(user) {
+            userEmail.textContent = user.email;
+            loginMethod.textContent = 'Netlify Identity';
+            dashboard.style.display = 'block';
+            document.querySelector('.main-content').style.display = 'none';
+            document.querySelector('.config-guide').style.display = 'none';
+        }
+        
+        function hideDashboard() {
+            dashboard.style.display = 'none';
+            document.querySelector('.main-content').style.display = 'flex';
+            document.querySelector('.config-guide').style.display = 'block';
+        }
+        
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        // Initialize the page
+        loginBtn.textContent = 'Login';
+        loginBtn.disabled = false;
+    </script>
+</body>
+</html>
