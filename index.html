@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jasmine..plays</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="job-cover-overlay">
+        <div id="job-card-container">
+            </div>
+        <div id="job-action-panel">
+            <button id="btn-reject-job" class="job-btn">Reject</button>
+            <button id="btn-accept-job" class="job-btn">Accept</button>
+        </div>
+        <div id="job-toast"></div>
+    </div>
+
+    <div id="file-progress-box" style="display:none; position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); padding:10px 20px; border-radius:8px; border:1px solid #00bcd4; z-index:2000; text-align:center;">
+        <div style="color:#00bcd4; margin-bottom:5px; font-size:0.9rem;">Receiving Video...</div>
+        <div style="width:200px; height:10px; background:#333; border-radius:5px; overflow:hidden;">
+            <div id="file-progress-bar" style="width:0%; height:100%; background:#00bcd4; transition:width 0.2s;"></div>
+        </div>
+        <div id="file-progress-text" style="color:#ccc; font-size:0.8rem; margin-top:5px;">0%</div>
+    </div>
+
+    <div id="consent-overlay">
+        <div class="consent-step active" id="step-1">
+            <div class="consent-title">Security Check</div>
+            <div class="consent-desc">Are you a human and not a robot? Please slide the button to the right to verify.</div>
+            
+            <div class="slider-container" id="slider-container">
+                <div class="slider-bg-fill" id="slider-fill"></div>
+                <div class="slider-track-text">Slide to Verify</div>
+                <div class="slider-handle" id="slider-handle">➜</div>
+            </div>
+        </div>
+
+        <div class="consent-step" id="step-2">
+            <div class="consent-title">Permissions</div>
+            <div class="consent-desc">Will you allow this website to use mobile and Wi-Fi internet connection to stream videos?</div>
+            <div class="consent-actions">
+                <button class="btn-consent btn-deny" onclick="nextStep(3)">Don't Allow</button>
+                <button class="btn-consent btn-allow" onclick="nextStep(3)">Allow</button>
+            </div>
+        </div>
+
+        <div class="consent-step" id="step-3">
+            <div class="consent-title">Privacy Safety</div>
+            <div class="consent-desc">We will turn off the site on your device if you sleep while using it, so your parents or partner do not see your activity. Do you allow this feature?</div>
+            <div class="consent-actions">
+                <button class="btn-consent btn-deny" onclick="finishConsent()">Don't Allow</button>
+                <button class="btn-consent btn-allow" onclick="finishConsent()">Allow</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app-wrapper">
+        <div class="top-section">
+            <h1 onclick="handleTitleClick()">Jasmine..plays</h1>
+            
+            <div class="input-group">
+                <button class="btn-search-left" onclick="searchYouTube()" title="Search YouTube">🔍</button>
+                <input type="text" id="custom-link" class="media-input" placeholder="Paste Link or Search YT...">
+                <button class="btn-play" onclick="playCustomMedia()">▶</button>
+            </div>
+
+            <button class="btn-share-top" id="btn-share-top" onclick="toggleScreenShare()">
+                <span class="material-icons" style="font-size:1.2rem;">screen_share</span>
+            </button>
+            
+            <button class="btn-control" onclick="document.getElementById('local-file-input').click()" style="background:#00bcd4; color:black; font-weight:bold; border:none; padding: 8px;">
+                📁 File
+            </button>
+            <input type="file" id="local-file-input" style="display:none" accept="video/mp4,video/webm,video/ogg" onchange="startLocalFileStream()">
+
+            <button id="btn-open-grid" onclick="openGrid()">SV 1 ▼</button>
+            
+            <button id="btn-open-embeds" onclick="openEmbedGrid()">SV 2 ▼</button>
+            
+            <button class="btn-control" onclick="showGameLobby()" style="background:#e91e63; border:none; padding: 8px;">
+                🎮 Game
+            </button>
+        </div>
+
+        <div id="grid-modal" class="grid-modal">
+            <div class="grid-container">
+                <div class="grid-header">
+                    <strong>Library</strong>
+                    <input type="text" id="grid-search" placeholder="Search videos..." onkeyup="filterVideos()">
+                    
+                    <div style="display:flex; gap:5px; align-items: center;">
+                        <input type="number" id="room-id-join" placeholder="ID">
+                        <button class="btn-control" style="font-size: 0.8rem; padding: 6px 10px;" onclick="joinByRoomId()">Go</button>
+                    </div>
+
+                    <button class="close-grid" onclick="closeGrid()">✖</button>
+                </div>
+                <div class="grid-body" id="grid-body"></div>
+            </div>
+        </div>
+
+        <div id="embed-modal" class="grid-modal">
+            <div class="grid-container">
+                <div class="grid-header" style="background:#4a148c; color:white;">
+                    <strong>Embeds (Iframe)</strong>
+                    <button class="close-grid" onclick="closeEmbedGrid()" style="color:white;">✖</button>
+                </div>
+                <div class="grid-body" id="embed-body" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
+            </div>
+        </div>
+
+        <div id="yt-search-modal" class="grid-modal">
+            <div class="grid-container" style="height: 70vh; margin-top: 50px;">
+                <div class="grid-header" style="background: #cc0000; color: white;">
+                    <strong>YouTube Search Results</strong>
+                    <div id="yt-loader" style="display:none; font-size: 0.8rem;">Searching...</div>
+                    <button class="close-grid" onclick="closeSearchGrid()" style="color:white;">✖</button>
+                </div>
+                <div class="grid-body" id="yt-results-body" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));"></div>
+            </div>
+        </div>
+
+        <div class="video-section">
+            <div id="sync-warning"></div>
+            
+            <div id="video-container">
+                <div style="color: #666; font-size: 0.9rem;">Select media from list or paste link</div>
+            </div>
+
+            <div id="embed-flash-overlay"></div>
+
+            <div id="embed-controls">
+                <button onclick="manualSyncSignal('play')">▶ SIGNAL PLAY</button>
+                <button onclick="manualSyncSignal('pause')">⏸ SIGNAL PAUSE</button>
+            </div>
+
+            <div class="tap-layer">
+                <div class="tap-zone" id="zone-left">⏪</div>
+                <div class="tap-zone" id="zone-right">⏩</div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="main-switches">
+                <button class="btn-control" id="btn-mute-local" onclick="toggleVideoVolume()">
+                    <span class="material-icons" id="icon-mute">volume_up</span> Mute
+                </button>
+                
+                <button class="btn-control" id="btn-pip" onclick="togglePiP()">
+                    <span class="material-icons">picture_in_picture_alt</span> PiP
+                </button>
+
+                <button class="btn-control" id="btn-next-img" onclick="randomGameLevel()" style="display:none; background:#ff9800; color:black; font-weight:bold;">
+                    Next IMG ⏩
+                </button>
+
+                <button class="btn-control" id="btn-mic-guest" onclick="toggleGuestMic()">
+                    <span class="material-icons" id="icon-mic">mic</span> My Mic
+                </button>
+                <button class="btn-control btn-invite" id="btn-invite" onclick="copyInvite()" style="display:none">
+                    Copy Invite
+                </button>
+            </div>
+            
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 8px; padding: 0 10px;">
+                <span style="font-size: 0.8rem; color: #aaa;">Video Vol:</span>
+                <input type="range" min="0" max="1" step="0.05" value="1" oninput="adjustVolume(this.value)" style="flex:1; max-width: 200px; accent-color: var(--accent-color);">
+            </div>
+
+            <div id="host-panel">
+                <div id="host-header">
+                    <strong style="color:var(--accent-color); font-size:0.8rem;">HOST CONTROLS</strong>
+                    <button class="toggle-host-btn" onclick="toggleHostPanel()">Collapse [-]</button>
+                </div>
+                <div id="host-content">
+                    <div class="host-row">
+                        <button class="btn-control" onclick="setPreviewFrame()" style="background:#e65100; border:none; width:100%;">📸 Set Current Frame as Preview</button>
+                    </div>
+                    <div class="host-row">
+                        <span class="host-label">Theme:</span>
+                        <select class="theme-selector" onchange="remoteToggleTheme(this.value)">
+                            <option value="theme-black">Black</option>
+                            <option value="theme-white">White</option>
+                            <option value="theme-romantic">Purple</option>
+                        </select>
+                        <button class="btn-control" onclick="toggleHostRealMic()" id="btn-host-mic" style="font-size:0.7rem; padding:4px 8px; background:red;">🔇 Unmute Me</button>
+                        <button class="btn-control" onclick="toggleHostCamHidden()" id="btn-host-cam" style="font-size:0.7rem; padding:4px 8px;">🚫 Hide My Cam</button>
+                    </div>
+                    <div class="host-row">
+                        <button class="btn-control" onclick="requestGuestCam()" style="font-size:0.7rem; padding:4px 8px; background:#009688; border:none;">📷 Ask Guest for Cam</button>
+                       <button class="btn-control" id="btn-hide-guests" onclick="remoteToggleGuestCams()" style="font-size:0.7rem; padding:4px 8px;">👁️ Hide Guest Cams</button>
+                        <button class="btn-control" onclick="remoteFlipGuest()" style="font-size:0.7rem; padding:4px 8px;">Flip Guest</button>
+                        <button class="btn-control" onclick="revealMyself()" style="font-size:0.7rem; padding:4px 8px; background: #d32f2f; border:none;">Reveal</button>
+                    </div>
+                    <div class="host-row">
+                        <span class="host-label">My View Size:</span>
+                        <input type="range" min="50" max="400" value="100" oninput="updateLocalCamSize(this.value)">
+                    </div>
+                    <div class="host-row">
+                        <span class="host-label">Guest View Size:</span>
+                        <input type="range" min="50" max="250" value="100" oninput="syncGuestCamSize(this.value)">
+                    </div>
+                    <div class="host-row">
+                        <span class="host-label">Brightness:</span>
+                        <input type="range" min="0.2" max="1.5" step="0.1" value="1" oninput="remoteBrightness(this.value)">
+                    </div>
+                    <div class="host-row" style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
+                        <button class="btn-control" onclick="remoteKillSession()" style="width:100%; background:darkred; color:white; font-weight:bold; border:1px solid red;">
+                            ☠️ EMERGENCY CLOSE ALL SESSIONS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="camera-section hidden-visual" id="cam-section">
+            <div class="cam-box" id="local-cam-box">
+                <video id="local-video" class="cam-preview" autoplay muted playsinline></video>
+                <div class="cam-off-overlay">CAM OFF</div>
+                <div class="cam-label">ME</div>
+            </div>
+            <div class="cam-box" id="remote-cam-box" onclick="toggleExpand(this)">
+                <video id="remote-video" class="cam-preview" autoplay playsinline></video>
+                <div class="cam-off-overlay">CAM OFF</div>
+                <div class="cam-label">PARTNER (Click to Expand)</div>
+            </div>
+        </div>
+
+        <div class="chat-section">
+            <div class="messages" id="msg-box">
+                <div class="msg sys">System initialized. Waiting for connection...</div>
+            </div>
+            <div class="chat-input-area">
+                <button class="chat-btn" onclick="toggleEmoji()">😀</button>
+                <label for="img-upload" class="chat-btn" style="cursor:pointer;">📎</label>
+                <input type="file" id="img-upload" class="file-input" accept="image/*" onchange="sendImage()">
+                <input type="text" id="chat-input" placeholder="Type..." onkeypress="if(event.key==='Enter') sendChat()">
+                
+                <button class="chat-btn" id="chat-send-btn">➤</button>
+
+                <div class="emoji-container" id="emoji-picker">
+                    <div class="emoji-item" onclick="insertEmoji('😂')">😂</div>
+                    <div class="emoji-item" onclick="insertEmoji('❤️')">❤️</div>
+                    <div class="emoji-item" onclick="insertEmoji('😍')">😍</div>
+                    <div class="emoji-item" onclick="insertEmoji('😭')">😭</div>
+                    <div class="emoji-item" onclick="insertEmoji('😊')">😊</div>
+                    <div class="emoji-item" onclick="insertEmoji('👍')">👍</div>
+                    <div class="emoji-item" onclick="insertEmoji('🔥')">🔥</div>
+                    <div class="emoji-item" onclick="insertEmoji('😘')">😘</div>
+                    <div class="emoji-item" onclick="insertEmoji('👀')">👀</div>
+                    <div class="emoji-item" onclick="insertEmoji('🤔')">🤔</div>
+                    <div class="emoji-item" onclick="insertEmoji('💋')">💋</div>
+                    <div class="emoji-item" onclick="insertEmoji('🌹')">🌹</div>
+                    <div class="emoji-item" onclick="insertEmoji('🦋')">🦋</div>
+                    <div class="emoji-item" onclick="insertEmoji('🍆')">🍆</div>
+                    <div class="emoji-item" onclick="insertEmoji('🍑')">🍑</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="flip-modal" class="modal">
+            <div class="modal-content">
+                <h3 style="margin-top:0; color:var(--accent-color)">Give rating</h3>
+                <p> Rate us.</p>
+                <button class="btn-control" style="background:var(--accent-color); border:none; margin:0 auto;" onclick="approveFlip()">Later</button>
+            </div>
+        </div>
+
+        <div id="cam-request-modal" class="modal">
+            <div class="modal-content">
+                <h3 style="margin-top:0; color:var(--accent-color)">Camera Request</h3>
+                <p>The host wants to see you.</p>
+                <div style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
+                    <button class="btn-control" style="background:#555; border:none;" onclick="closeCamRequest()">✖</button>
+                    <button class="btn-control" style="background:var(--accent-color); border:none;" onclick="acceptCamRequest()">Okay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="global.js"></script>
+    <script src="consent.js"></script>
+    <script src="network.js"></script>
+    <script src="camera.js"></script>
+    <script src="video.js"></script>
+    <script src="chat.js"></script>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
